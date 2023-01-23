@@ -1,0 +1,35 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  generateName: node-shell-
+  namespace: kube-system
+spec:
+  containers:
+    - args:
+        - -t
+        - "1"
+        - -m
+        - -u
+        - -i
+        - -n
+        - sleep
+        - "14000"
+      command:
+        - nsenter
+      image: docker.io/alpine:3.13
+      name: shell
+      resources: {}
+      securityContext:
+        privileged: true
+  enableServiceLinks: true
+  hostIPC: true
+  hostNetwork: true
+  hostPID: true
+  nodeName: name 
+  preemptionPolicy: PreemptLowerPriority
+  priority: 2000001000
+  priorityClassName: system-node-critical
+  restartPolicy: Never
+  terminationGracePeriodSeconds: 0
+  tolerations:
+    - operator: Exists
