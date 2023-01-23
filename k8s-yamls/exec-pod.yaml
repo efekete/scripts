@@ -1,10 +1,37 @@
-k8s_exec_node(){
-  wget https://raw.githubusercontent.com/efekete/scripts/master/k8s-yamls/exec-pod.yaml -q -O /tmp/exec-pod.yaml
-  export EXEC_NODE_NAME=$1
-  yq e -i '.spec.nodeName= env(EXEC_NODE_NAME)' /tmp/exec-pod.yaml
-  POD_NAME=$(kubectl create -f /tmp/exec-pod.yaml | awk '{print $1}')
-  echo "Waiting for pod to be ready"
-  kubectl wait --for=condition=Ready -n kube-system $POD_NAME
-  echo "Pod ready, executing"
-  kubectl exec -n kube-system -it $POD_NAME -- bash
-}
+apiVersion: v1
+kind: Pod
+metadata:
+  generateName: node-shell-temp-
+  namespace: kube-system
+  labels:
+    node-shell: ""
+spec:
+  containers:
+    - args:
+        - -t
+        - "1"
+        - -m
+        - -u
+        - -i
+        - -n
+        - sleep
+        - "14000"
+      command:
+        - nsenter
+      image: docker.io/alpine:3.13
+      name: shell
+      resources: {}
+      securityContext:
+        privileged: true
+  enableServiceLinks: true
+  hostIPC: true
+  hostNetwork: true
+  hostPID: true
+  nodeName: name
+  preemptionPolicy: PreemptLowerPriority
+  priority: 2000001000
+  priorityClassName: system-node-critical
+  restartPolicy: Never
+  terminationGracePeriodSeconds: 0
+  tolerations:
+    - operator: Exists
